@@ -2,7 +2,7 @@ use iced::{
     Alignment::Center,
     Element,
     Length::Fill,
-    widget::{Column, Space, column, container, pick_list, row, text},
+    widget::{Column, Row, Space, column, container, pick_list, row, text},
 };
 use std::collections::HashMap;
 use std::fmt;
@@ -162,11 +162,11 @@ impl App {
             text("Right Hand").size(14).width(80),
         ]
         .spacing(20);
-        let mut modifier_row: Vec<Column<Message>> = Vec::new();
+        let mut modifier_row = row![];
 
         for (key, config) in &self.keys {
             let key_clone = key.clone();
-            modifier_row.push(column![
+            modifier_row = modifier_row.push(column![
                 text(format!("{:?}", key)).size(34),
                 pick_list(
                     ModifierType::ALL,
@@ -181,6 +181,7 @@ impl App {
             .push(Space::height(Space::new(), 20))
             .push(header)
             .spacing(10)
+            .push(modifier_row)
             .align_x(Center)
             .into()
     }
