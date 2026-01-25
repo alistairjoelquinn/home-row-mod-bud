@@ -1,17 +1,12 @@
 use iced::{
+    Alignment::Center,
     Element,
     Length::Fill,
-    widget::{column, container, text},
+    widget::{Space, button, column, container, row, text},
 };
 use std::collections::HashMap;
 
-struct App {
-    name: String,
-    screen: Screen,
-    keys: HashMap<Key, KeyConfig>,
-}
-
-#[derive(Debug, Clone, Hash, Eq, PartialEq)]
+#[derive(Debug, Hash, Eq, PartialEq)]
 enum Key {
     A,
     S,
@@ -26,6 +21,29 @@ enum Key {
 struct KeyConfig {
     modifier: ModifierType,
     tapping_terms: Vec<u8>,
+}
+
+#[derive(Debug)]
+enum Message {}
+
+#[derive(Debug)]
+enum ModifierType {
+    Shift,
+    Ctrl,
+    Alt,
+    Gui,
+}
+
+enum Screen {
+    KeySelection,
+    TypingTest,
+    Results,
+}
+
+struct App {
+    name: String,
+    screen: Screen,
+    keys: HashMap<Key, KeyConfig>,
 }
 
 impl Default for App {
@@ -115,7 +133,19 @@ impl App {
     }
     fn view_key_selection(&self) -> Element<'_, Message> {
         let title = text("Home Row Mod Bud").size(32);
-        column![title].into()
+        let subtitle = text("Assign each home row key the modifier you use (leave blank for keys with no modifier):").size(16);
+        let header = row![
+            text("Left Hand").size(14).width(80),
+            text("Right Hand").size(14).width(80),
+        ]
+        .spacing(20);
+
+        column![title, subtitle]
+            .push(Space::height(Space::new(), 20))
+            .push(header)
+            .spacing(10)
+            .align_x(Center)
+            .into()
     }
     fn view_typing_test(&self) -> Element<'_, Message> {
         let title = text("Typing Test").size(32);
@@ -125,24 +155,6 @@ impl App {
         let title = text("Results Page").size(32);
         column![title].into()
     }
-}
-
-#[derive(Debug, Clone)]
-enum Message {}
-
-#[derive(Debug, Clone)]
-enum ModifierType {
-    Shift,
-    Ctrl,
-    Alt,
-    Gui,
-}
-
-#[derive(Debug, Clone)]
-enum Screen {
-    KeySelection,
-    TypingTest,
-    Results,
 }
 
 fn main() -> iced::Result {
