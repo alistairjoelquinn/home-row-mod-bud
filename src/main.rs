@@ -161,18 +161,21 @@ impl App {
             text("Right Hand").size(14).width(80),
         ]
         .spacing(20);
-        let mut modifier_row = row![];
+        let mut modifier_row = row![].spacing(20);
 
         for config in &self.keys {
-            modifier_row = modifier_row.push(column![
-                text(format!("{}", config.key)).size(34),
-                pick_list(
-                    ModifierType::ALL,
-                    Some(config.modifier.clone()),
-                    move |selected| Message::ModifierSelected(config.key, selected),
-                )
-                .width(80)
-            ])
+            modifier_row = modifier_row.push(
+                column![
+                    text(format!("{}", config.key)).size(34),
+                    pick_list(
+                        ModifierType::ALL,
+                        Some(config.modifier.clone()),
+                        move |selected| Message::ModifierSelected(config.key, selected),
+                    )
+                    .width(80)
+                ]
+                .align_x(Center),
+            )
         }
 
         column![title, subtitle]
@@ -180,6 +183,7 @@ impl App {
             .push(header)
             .spacing(10)
             .push(modifier_row)
+            .spacing(10)
             .align_x(Center)
             .into()
     }
