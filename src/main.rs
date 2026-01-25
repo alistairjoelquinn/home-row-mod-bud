@@ -1,4 +1,8 @@
-use iced::widget::{Text, text};
+use iced::{
+    Element,
+    Length::Fill,
+    widget::{column, container, text},
+};
 use std::collections::HashMap;
 
 struct App {
@@ -95,8 +99,31 @@ impl App {
     fn update(&mut self, message: Message) {
         println!("{:#?}", message)
     }
-    fn view(&self) -> Text<'_> {
-        text(&self.name).size(50)
+    fn view(&self) -> Element<'_, Message> {
+        let content: Element<Message> = match self.screen {
+            Screen::KeySelection => self.view_key_selection(),
+            Screen::TypingTest => self.view_typing_test(),
+            Screen::Results => self.view_results(),
+        };
+        container(content)
+            .width(Fill)
+            .height(Fill)
+            .center_x(Fill)
+            .center_y(Fill)
+            .padding(40)
+            .into()
+    }
+    fn view_key_selection(&self) -> Element<'_, Message> {
+        let title = text("Home Row Mod Bud").size(32);
+        column![title].into()
+    }
+    fn view_typing_test(&self) -> Element<'_, Message> {
+        let title = text("Typing Test").size(32);
+        column![title].into()
+    }
+    fn view_results(&self) -> Element<'_, Message> {
+        let title = text("Results Page").size(32);
+        column![title].into()
     }
 }
 
