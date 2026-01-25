@@ -46,6 +46,7 @@ enum Message {
 
 #[derive(Debug, Clone, PartialEq)]
 enum ModifierType {
+    None,
     Shift,
     Ctrl,
     Alt,
@@ -54,6 +55,7 @@ enum ModifierType {
 
 impl ModifierType {
     const ALL: &[ModifierType] = &[
+        ModifierType::None,
         ModifierType::Shift,
         ModifierType::Ctrl,
         ModifierType::Alt,
@@ -64,6 +66,7 @@ impl ModifierType {
 impl fmt::Display for ModifierType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
+            ModifierType::None => write!(f, "-"),
             ModifierType::Shift => write!(f, "Shift"),
             ModifierType::Ctrl => write!(f, "Ctrl"),
             ModifierType::Alt => write!(f, "Alt"),
