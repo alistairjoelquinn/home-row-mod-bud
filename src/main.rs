@@ -4,7 +4,6 @@ use iced::{
     Length::Fill,
     widget::{Column, Row, Space, column, container, pick_list, row, text},
 };
-use std::collections::HashMap;
 use std::fmt;
 
 #[derive(Debug, Clone, Hash, Eq, PartialEq)]
@@ -20,6 +19,7 @@ enum Key {
 }
 
 struct KeyConfig {
+    key: Key,
     modifier: ModifierType,
     tapping_terms: Vec<u8>,
 }
@@ -66,7 +66,7 @@ enum Screen {
 struct App {
     name: String,
     screen: Screen,
-    keys: HashMap<Key, KeyConfig>,
+    keys: Vec<KeyConfig>,
 }
 
 impl Default for App {
@@ -74,64 +74,16 @@ impl Default for App {
         Self {
             name: String::from("home row mod bud"),
             screen: Screen::KeySelection,
-            keys: HashMap::from([
-                (
-                    Key::A,
-                    KeyConfig {
-                        modifier: ModifierType::Ctrl,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::S,
-                    KeyConfig {
-                        modifier: ModifierType::Alt,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::D,
-                    KeyConfig {
-                        modifier: ModifierType::Gui,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::F,
-                    KeyConfig {
-                        modifier: ModifierType::Shift,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::J,
-                    KeyConfig {
-                        modifier: ModifierType::Shift,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::K,
-                    KeyConfig {
-                        modifier: ModifierType::Gui,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::L,
-                    KeyConfig {
-                        modifier: ModifierType::Alt,
-                        tapping_terms: vec![],
-                    },
-                ),
-                (
-                    Key::SemiColon,
-                    KeyConfig {
-                        modifier: ModifierType::Ctrl,
-                        tapping_terms: vec![],
-                    },
-                ),
-            ]),
+            keys: vec![
+                KeyConfig { key: Key::A, modifier: ModifierType::Ctrl, tapping_terms: vec![] },
+                KeyConfig { key: Key::S, modifier: ModifierType::Alt, tapping_terms: vec![] },
+                KeyConfig { key: Key::D, modifier: ModifierType::Gui, tapping_terms: vec![] },
+                KeyConfig { key: Key::F, modifier: ModifierType::Shift, tapping_terms: vec![] },
+                KeyConfig { key: Key::J, modifier: ModifierType::Shift, tapping_terms: vec![] },
+                KeyConfig { key: Key::K, modifier: ModifierType::Gui, tapping_terms: vec![] },
+                KeyConfig { key: Key::L, modifier: ModifierType::Alt, tapping_terms: vec![] },
+                KeyConfig { key: Key::SemiColon, modifier: ModifierType::Ctrl, tapping_terms: vec![] },
+            ],
         }
     }
 }
@@ -164,10 +116,10 @@ impl App {
         .spacing(20);
         let mut modifier_row = row![];
 
-        for (key, config) in &self.keys {
-            let key_clone = key.clone();
+        for config in &self.keys {
+            let key_clone = config.key.clone();
             modifier_row = modifier_row.push(column![
-                text(format!("{:?}", key)).size(34),
+                text(format!("{:?}", config.key)).size(34),
                 pick_list(
                     ModifierType::ALL,
                     Some(config.modifier.clone()),
