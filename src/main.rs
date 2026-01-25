@@ -2,11 +2,12 @@ use iced::{
     Alignment::Center,
     Element,
     Length::Fill,
-    widget::{Space, button, column, container, row, text},
+    widget::{Column, Space, column, container, pick_list, row, text},
 };
 use std::collections::HashMap;
+use std::fmt;
 
-#[derive(Debug, Hash, Eq, PartialEq)]
+#[derive(Debug, Clone, Hash, Eq, PartialEq)]
 enum Key {
     A,
     S,
@@ -23,15 +24,37 @@ struct KeyConfig {
     tapping_terms: Vec<u8>,
 }
 
-#[derive(Debug)]
-enum Message {}
+#[derive(Debug, Clone)]
+enum Message {
+    ModifierSelected(Key, ModifierType),
+}
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 enum ModifierType {
     Shift,
     Ctrl,
     Alt,
     Gui,
+}
+
+impl ModifierType {
+    const ALL: &[ModifierType] = &[
+        ModifierType::Shift,
+        ModifierType::Ctrl,
+        ModifierType::Alt,
+        ModifierType::Gui,
+    ];
+}
+
+impl fmt::Display for ModifierType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ModifierType::Shift => write!(f, "Shift"),
+            ModifierType::Ctrl => write!(f, "Ctrl"),
+            ModifierType::Alt => write!(f, "Alt"),
+            ModifierType::Gui => write!(f, "Gui"),
+        }
+    }
 }
 
 enum Screen {
@@ -139,6 +162,20 @@ impl App {
             text("Right Hand").size(14).width(80),
         ]
         .spacing(20);
+        let mut modifier_row: Vec<Column<Message>> = Vec::new();
+
+        for (key, config) in &self.keys {
+            let key_clone = key.clone();
+            modifier_row.push(column![
+                text(format!("{:?}", key)).size(34),
+                pick_list(
+                    ModifierType::ALL,
+                    Some(config.modifier.clone()),
+                    move |selected| Message::ModifierSelected(key_clone.clone(), selected),
+                )
+                .width(80)
+            ])
+        }
 
         column![title, subtitle]
             .push(Space::height(Space::new(), 20))
