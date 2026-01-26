@@ -159,13 +159,7 @@ impl App {
     fn view_key_selection(&self) -> Element<'_, Message> {
         let title = text("Home Row Mod Bud").size(32);
         let subtitle = text("Assign each home row key the modifier you use (leave blank for keys with no modifier):").size(16);
-        let header = row![
-            text("Left Hand").size(14).width(80),
-            text("Right Hand").size(14).width(80),
-        ]
-        .spacing(20);
         let mut modifier_row = row![].spacing(20);
-
         for config in &self.keys {
             modifier_row = modifier_row.push(
                 column![
@@ -177,14 +171,12 @@ impl App {
                     )
                     .width(80)
                 ]
-                .align_x(Center),
+                .align_x(Center)
+                .spacing(10),
             )
         }
-
         column![title, subtitle]
             .push(Space::height(Space::new(), 20))
-            .push(header)
-            .spacing(10)
             .push(modifier_row)
             .spacing(10)
             .align_x(Center)
