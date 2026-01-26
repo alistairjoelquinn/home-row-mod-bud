@@ -70,7 +70,11 @@ impl fmt::Display for ModifierType {
             ModifierType::Shift => write!(f, "Shift"),
             ModifierType::Ctrl => write!(f, "Ctrl"),
             ModifierType::Alt => write!(f, "Alt"),
-            ModifierType::Gui => write!(f, "Gui"),
+            ModifierType::Gui => match std::env::consts::OS {
+                "macos" => write!(f, "Cmd"),
+                "windows" => write!(f, "Win"),
+                _ => write!(f, "Super"),
+            },
         }
     }
 }
