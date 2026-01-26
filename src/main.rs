@@ -44,7 +44,7 @@ enum Message {
     ModifierSelected(Key, ModifierType),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 enum ModifierType {
     None,
     Shift,
@@ -140,7 +140,15 @@ impl Default for App {
 
 impl App {
     fn update(&mut self, message: Message) {
-        println!("{:#?}", message)
+        match message {
+            Message::ModifierSelected(key, modifier) => {
+                for item in &mut self.keys {
+                    if item.key == key && item.modifier != modifier {
+                        item.modifier = modifier;
+                    }
+                }
+            }
+        }
     }
     fn view(&self) -> Element<'_, Message> {
         let content: Element<Message> = match self.screen {
@@ -167,7 +175,7 @@ impl App {
                     pick_list(
                         ModifierType::ALL,
                         Some(config.modifier.clone()),
-                        move |selected| Message::ModifierSelected(config.key, selected),
+                        move |modifier| Message::ModifierSelected(config.key, modifier),
                     )
                     .width(80)
                 ]
