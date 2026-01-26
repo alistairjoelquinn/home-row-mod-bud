@@ -2,7 +2,7 @@ use iced::{
     Alignment::Center,
     Element,
     Length::Fill,
-    widget::{Space, column, container, pick_list, row, text},
+    widget::{Space, button, column, container, pick_list, row, text},
 };
 use std::fmt;
 
@@ -42,6 +42,7 @@ struct KeyConfig {
 #[derive(Debug, Clone)]
 enum Message {
     ModifierSelected(Key, ModifierType),
+    StartTest,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -187,10 +188,14 @@ impl App {
                 .spacing(10),
             )
         }
+        let start_button = button(text("Start Typing Test"))
+            .padding([10, 20])
+            .on_press(Message::StartTest);
         column![title, subtitle]
-            .push(Space::height(Space::new(), 20))
+            .push(Space::height(Space::new(), 10))
             .push(modifier_row)
-            .spacing(10)
+            .spacing(30)
+            .push(start_button)
             .align_x(Center)
             .into()
     }
