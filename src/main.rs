@@ -153,6 +153,7 @@ impl App {
                     }
                 }
             }
+            Message::StartTest => self.screen = Screen::TypingTest,
         }
     }
     fn view(&self) -> Element<'_, Message> {
