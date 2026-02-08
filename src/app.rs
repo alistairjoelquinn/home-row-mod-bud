@@ -11,27 +11,18 @@ pub struct App {
 
 impl Default for App {
     fn default() -> Self {
-        let keys = [
-            (Key::A, ModifierType::Ctrl),
-            (Key::S, ModifierType::Alt),
-            (Key::D, ModifierType::Gui),
-            (Key::F, ModifierType::Shift),
-            (Key::J, ModifierType::Shift),
-            (Key::K, ModifierType::Gui),
-            (Key::L, ModifierType::Alt),
-            (Key::SemiColon, ModifierType::Ctrl),
-        ]
-        .into_iter()
-        .map(|(key, modifier)| KeyConfig {
-            key,
-            modifier,
-            tapping_terms: vec![],
-        })
-        .collect();
-
         Self {
             screen: Screen::KeySelection,
-            keys,
+            keys: vec![
+                KeyConfig::new(Key::A, ModifierType::Ctrl),
+                KeyConfig::new(Key::S, ModifierType::Alt),
+                KeyConfig::new(Key::D, ModifierType::Gui),
+                KeyConfig::new(Key::F, ModifierType::Shift),
+                KeyConfig::new(Key::J, ModifierType::Shift),
+                KeyConfig::new(Key::K, ModifierType::Gui),
+                KeyConfig::new(Key::L, ModifierType::Alt),
+                KeyConfig::new(Key::SemiColon, ModifierType::Ctrl),
+            ],
         }
     }
 }

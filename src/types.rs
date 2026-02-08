@@ -33,6 +33,16 @@ pub struct KeyConfig {
     pub tapping_terms: Vec<u8>,
 }
 
+impl KeyConfig {
+    pub fn new(key: Key, modifier: ModifierType) -> Self {
+        Self {
+            key,
+            modifier,
+            tapping_terms: vec![],
+        }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ModifierType {
     None,
