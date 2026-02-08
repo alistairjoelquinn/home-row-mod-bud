@@ -5,4 +5,5 @@ pub enum Message {
     ModifierSelected(Key, ModifierType),
     StartTest,
     ShowResults,
+    Restart,
 }
