@@ -11,8 +11,6 @@ use crate::types::{Color, ExpectedInput};
 pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Message> {
     let title = text("Typing Test").size(32);
 
-    // build word-level chunks: each chunk is a group of elements that shouldn't break
-    // (in this UI it looks really weird when words break)
     let mut chunks: Vec<(Vec<Element<'_, Message>>, usize)> = Vec::new();
     let mut current_chunk: Vec<Element<'_, Message>> = Vec::new();
     let mut chunk_len: usize = 0;
@@ -32,14 +30,12 @@ pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Me
                 current_chunk.push(text(display_char.to_string()).size(22).color(color).into());
                 chunk_len += 1;
 
-                // the end of a word
                 if *c == ' ' {
                     chunks.push((std::mem::take(&mut current_chunk), chunk_len));
                     chunk_len = 0;
                 }
             }
             ExpectedInput::Combo(modifier, letter) => {
-                // flush any pending chars as their own chunk
                 if !current_chunk.is_empty() {
                     chunks.push((std::mem::take(&mut current_chunk), chunk_len));
                     chunk_len = 0;
