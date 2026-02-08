@@ -1,7 +1,7 @@
 use iced::{
     Alignment::Center,
     Element,
-    Length::Fill,
+    Length::{Fill, Shrink},
     widget::{button, column, container, row, text},
 };
 
@@ -26,13 +26,15 @@ pub fn view(tokens: &[Token]) -> Element<'_, Message> {
                 ));
             }
             Token::Combo(modifier, letter) => {
-                let label = format!("{}+{}", modifier.symbol(), letter);
+                let label = format!("{} {}", modifier.symbol(), letter);
                 let len = label.len() + 1;
-                let badge = container(text(label).size(14).color(Color::GOLD))
-                    .padding([2, 6])
+                let badge = container(text(label).size(14).color(Color::BADGE))
+                    .padding([5, 4])
+                    .center_x(Shrink)
+                    .center_y(Shrink)
                     .style(|_theme| container::Style {
                         border: iced::Border {
-                            color: Color::GOLD,
+                            color: Color::BADGE_BORDER,
                             width: 1.0,
                             radius: 4.0.into(),
                         },

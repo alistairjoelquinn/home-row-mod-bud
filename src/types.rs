@@ -97,7 +97,8 @@ pub struct Color;
 
 impl Color {
     pub const GREY: iced::Color = iced::Color::from_rgb(0.4, 0.4, 0.4);
-    pub const GOLD: iced::Color = iced::Color::from_rgb(0.75, 0.62, 0.15);
+    pub const BADGE: iced::Color = iced::Color::from_rgb(0.7, 0.7, 0.7);
+    pub const BADGE_BORDER: iced::Color = iced::Color::from_rgb(0.45, 0.45, 0.45);
 }
 
 pub enum Screen {
