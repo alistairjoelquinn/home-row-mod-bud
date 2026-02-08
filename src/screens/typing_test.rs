@@ -5,8 +5,9 @@ use iced::{
 };
 
 use crate::message::Message;
+use crate::types::Token;
 
-pub fn view() -> Element<'static, Message> {
+pub fn view(tokens: &[Token]) -> Element<'_, Message> {
     let title = text("Typing Test").size(32);
     let show_results_button = button(text("Show Results"))
         .padding([10, 20])

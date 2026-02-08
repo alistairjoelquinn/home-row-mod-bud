@@ -43,6 +43,12 @@ impl KeyConfig {
     }
 }
 
+#[derive(Debug, Clone)]
+pub enum Token {
+    Word(String),
+    Combo(ModifierType, char),
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ModifierType {
     None,
