@@ -66,6 +66,15 @@ impl ModifierType {
         ModifierType::Alt,
         ModifierType::Gui,
     ];
+    pub fn symbol(&self) -> &'static str {
+        match self {
+            ModifierType::None => "-",
+            ModifierType::Shift => "⇧",
+            ModifierType::Ctrl => "⌃",
+            ModifierType::Alt => "⌥",
+            ModifierType::Gui => "⌘",
+        }
+    }
 }
 
 impl fmt::Display for ModifierType {
@@ -88,7 +97,7 @@ pub struct Color;
 
 impl Color {
     pub const GREY: iced::Color = iced::Color::from_rgb(0.4, 0.4, 0.4);
-    pub const GOLD: iced::Color = iced::Color::from_rgb(0.886, 0.718, 0.078);
+    pub const GOLD: iced::Color = iced::Color::from_rgb(0.75, 0.62, 0.15);
 }
 
 pub enum Screen {
