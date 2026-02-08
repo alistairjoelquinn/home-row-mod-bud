@@ -124,7 +124,7 @@ impl App {
 
     pub fn subscription(&self) -> Subscription<Message> {
         match self.screen {
-            Screen::TypingTest => iced::keyboard::listen().map(Message::KeyboardEvent),
+            Screen::TypingTest => keyboard::listen().map(Message::KeyboardEvent),
             _ => Subscription::none(),
         }
     }

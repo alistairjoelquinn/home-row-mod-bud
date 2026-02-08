@@ -22,17 +22,17 @@ pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Me
             ExpectedInput::Char(c) => {
                 let is_current = i == current_position;
                 let color = if i < current_position {
-                    Color::TYPED
+                    Color::TEXT_TYPED
                 } else if is_current {
-                    Color::CURSOR
+                    Color::TEXT_ACTIVE
                 } else {
-                    Color::GREY
+                    Color::TEXT
                 };
                 let display_char = if *c == ' ' && is_current { '·' } else { *c };
                 current_chunk.push(text(display_char.to_string()).size(22).color(color).into());
                 chunk_len += 1;
 
-                // space marks the end of a word chunk
+                // the end of a word
                 if *c == ' ' {
                     chunks.push((std::mem::take(&mut current_chunk), chunk_len));
                     chunk_len = 0;
@@ -49,9 +49,9 @@ pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Me
                 let visual_len = label.len() + 1;
 
                 let (text_color, border_color) = if i < current_position {
-                    (Color::BADGE_TYPED, Color::BADGE_TYPED_BORDER)
+                    (Color::BADGE_TYPED, Color::BADGE_BORDER_TYPED)
                 } else if i == current_position {
-                    (Color::BADGE_ACTIVE, Color::BADGE_ACTIVE_BORDER)
+                    (Color::BADGE_ACTIVE, Color::BADGE_BORDER_ACTIVE)
                 } else {
                     (Color::BADGE, Color::BADGE_BORDER)
                 };
