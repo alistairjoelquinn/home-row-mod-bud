@@ -107,13 +107,13 @@ pub fn flatten_tokens(tokens: &[Token]) -> Vec<ExpectedInput> {
                 for c in word.chars() {
                     inputs.push(ExpectedInput::Char(c));
                 }
-                if i < tokens.len() - 1 {
-                    inputs.push(ExpectedInput::Char(' '));
-                }
             }
             Token::Combo(modifier, letter) => {
                 inputs.push(ExpectedInput::Combo(*modifier, *letter));
             }
+        }
+        if i < tokens.len() - 1 {
+            inputs.push(ExpectedInput::Char(' '));
         }
     }
     inputs

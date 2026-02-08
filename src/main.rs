@@ -6,5 +6,8 @@ mod types;
 use app::App;
 
 fn main() -> iced::Result {
-    iced::run(App::update, App::view)
+    iced::application(App::default, App::update, App::view)
+        .title("Home Row Mod Bud")
+        .subscription(App::subscription)
+        .run()
 }

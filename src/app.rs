@@ -1,10 +1,10 @@
-use iced::{Element, Length::Fill, widget::container};
+use iced::{Element, Length::Fill, Subscription, widget::container};
 use rand::RngExt;
 use rand::seq::IndexedRandom;
 
 use crate::message::Message;
 use crate::screens;
-use crate::types::{Key, KeyConfig, ModifierType, Screen, Token};
+use crate::types::{ExpectedInput, Key, KeyConfig, ModifierType, Screen, Token, flatten_tokens};
 
 const PARAGRAPH: &str = "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do. Once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, and what is the use of a book, thought Alice, without pictures or conversations? So she was considering in her own mind whether the pleasure of making a daisy chain would be worth the trouble.";
 
@@ -12,6 +12,8 @@ pub struct App {
     pub screen: Screen,
     pub keys: Vec<KeyConfig>,
     pub test_tokens: Vec<Token>,
+    pub expected_inputs: Vec<ExpectedInput>,
+    pub current_position: usize,
 }
 
 impl Default for App {
@@ -29,6 +31,8 @@ impl Default for App {
                 KeyConfig::new(Key::SemiColon, ModifierType::Ctrl),
             ],
             test_tokens: vec![],
+            expected_inputs: vec![],
+            current_position: 0,
         }
     }
 }
@@ -45,16 +49,79 @@ impl App {
             }
             Message::StartTest => {
                 self.test_tokens = generate_test_tokens(&self.keys);
+                self.expected_inputs = flatten_tokens(&self.test_tokens);
+                self.current_position = 0;
                 self.screen = Screen::TypingTest;
             }
             Message::ShowResults => self.screen = Screen::Results,
             Message::Restart => self.screen = Screen::KeySelection,
+            Message::KeyboardEvent(event) => {
+                if !matches!(self.screen, Screen::TypingTest) {
+                    return;
+                }
+                if self.current_position >= self.expected_inputs.len() {
+                    return;
+                }
+                if let iced::keyboard::Event::KeyPressed {
+                    key,
+                    text,
+                    modifiers,
+                    ..
+                } = event
+                {
+                    let expected = &self.expected_inputs[self.current_position];
+                    let matched = match expected {
+                        ExpectedInput::Char(c) => {
+                            // try text field first (handles case sensitivity)
+                            let from_text = text
+                                .as_ref()
+                                .and_then(|t| t.chars().next())
+                                .is_some_and(|t| t == *c);
+                            // fallback to key field when text is None
+                            let from_key = text.is_none()
+                                && match &key {
+                                    iced::keyboard::Key::Character(k) => {
+                                        k.chars().next().is_some_and(|k| k == *c)
+                                    }
+                                    _ => false,
+                                };
+                            from_text || from_key
+                        }
+                        ExpectedInput::Combo(modifier_type, letter) => {
+                            let modifier_held = match modifier_type {
+                                ModifierType::Shift => modifiers.shift(),
+                                ModifierType::Ctrl => modifiers.control(),
+                                ModifierType::Alt => modifiers.alt(),
+                                ModifierType::Gui => modifiers.logo(),
+                                ModifierType::None => false,
+                            };
+                            let key_matches = match &key {
+                                iced::keyboard::Key::Character(c) => {
+                                    c.as_str() == letter.to_string().as_str()
+                                }
+                                _ => false,
+                            };
+                            modifier_held && key_matches
+                        }
+                    };
+
+                    if matched {
+                        self.current_position += 1;
+                        if self.current_position >= self.expected_inputs.len() {
+                            self.screen = Screen::Results;
+                        }
+                    }
+                }
+            }
         }
     }
+
     pub fn view(&self) -> Element<'_, Message> {
         let content: Element<Message> = match self.screen {
             Screen::KeySelection => screens::key_selection::view(&self.keys),
-            Screen::TypingTest => screens::typing_test::view(&self.test_tokens),
+            Screen::TypingTest => {
+                screens::typing_test::view(&self.expected_inputs, self.current_position)
+            }
             Screen::Results => screens::results::view(),
         };
         container(content)
@@ -64,6 +131,13 @@ impl App {
             .center_y(Fill)
             .padding(40)
             .into()
+    }
+
+    pub fn subscription(&self) -> Subscription<Message> {
+        match self.screen {
+            Screen::TypingTest => iced::keyboard::listen().map(Message::KeyboardEvent),
+            _ => Subscription::none(),
+        }
     }
 }
 
