@@ -84,6 +84,13 @@ impl fmt::Display for ModifierType {
     }
 }
 
+pub struct Color;
+
+impl Color {
+    pub const GREY: iced::Color = iced::Color::from_rgb(0.4, 0.4, 0.4);
+    pub const GOLD: iced::Color = iced::Color::from_rgb(0.886, 0.718, 0.078);
+}
+
 pub enum Screen {
     KeySelection,
     TypingTest,
