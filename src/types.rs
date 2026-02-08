@@ -13,7 +13,7 @@ pub enum Key {
 }
 
 impl fmt::Display for Key {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             Key::A => write!(f, "A"),
             Key::S => write!(f, "S"),
@@ -78,16 +78,16 @@ impl ModifierType {
 }
 
 impl fmt::Display for ModifierType {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            ModifierType::None => write!(formatter, "-"),
-            ModifierType::Shift => write!(formatter, "Shift"),
-            ModifierType::Ctrl => write!(formatter, "Ctrl"),
-            ModifierType::Alt => write!(formatter, "Alt"),
+            ModifierType::None => write!(f, "-"),
+            ModifierType::Shift => write!(f, "Shift"),
+            ModifierType::Ctrl => write!(f, "Ctrl"),
+            ModifierType::Alt => write!(f, "Alt"),
             ModifierType::Gui => match std::env::consts::OS {
-                "macos" => write!(formatter, "Cmd"),
-                "windows" => write!(formatter, "Win"),
-                _ => write!(formatter, "Super"),
+                "macos" => write!(f, "Cmd"),
+                "windows" => write!(f, "Win"),
+                _ => write!(f, "Super"),
             },
         }
     }

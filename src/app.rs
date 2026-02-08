@@ -53,12 +53,8 @@ impl App {
                 self.current_position = 0;
                 self.screen = Screen::TypingTest;
             }
-            Message::ShowResults => self.screen = Screen::Results,
             Message::Restart => self.screen = Screen::KeySelection,
             Message::KeyboardEvent(event) => {
-                if !matches!(self.screen, Screen::TypingTest) {
-                    return;
-                }
                 if self.current_position >= self.expected_inputs.len() {
                     return;
                 }
