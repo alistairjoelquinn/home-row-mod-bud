@@ -4,4 +4,5 @@ use crate::types::{Key, ModifierType};
 pub enum Message {
     ModifierSelected(Key, ModifierType),
     StartTest,
+    ShowResults,
 }

@@ -38,9 +38,9 @@ impl App {
                 }
             }
             Message::StartTest => self.screen = Screen::TypingTest,
+            Message::ShowResults => self.screen = Screen::Results,
         }
     }
-
     pub fn view(&self) -> Element<'_, Message> {
         let content: Element<Message> = match self.screen {
             Screen::KeySelection => screens::key_selection::view(&self.keys),
