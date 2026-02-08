@@ -11,50 +11,27 @@ pub struct App {
 
 impl Default for App {
     fn default() -> Self {
+        let keys = [
+            (Key::A, ModifierType::Ctrl),
+            (Key::S, ModifierType::Alt),
+            (Key::D, ModifierType::Gui),
+            (Key::F, ModifierType::Shift),
+            (Key::J, ModifierType::Shift),
+            (Key::K, ModifierType::Gui),
+            (Key::L, ModifierType::Alt),
+            (Key::SemiColon, ModifierType::Ctrl),
+        ]
+        .into_iter()
+        .map(|(key, modifier)| KeyConfig {
+            key,
+            modifier,
+            tapping_terms: vec![],
+        })
+        .collect();
+
         Self {
             screen: Screen::KeySelection,
-            keys: vec![
-                KeyConfig {
-                    key: Key::A,
-                    modifier: ModifierType::Ctrl,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::S,
-                    modifier: ModifierType::Alt,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::D,
-                    modifier: ModifierType::Gui,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::F,
-                    modifier: ModifierType::Shift,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::J,
-                    modifier: ModifierType::Shift,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::K,
-                    modifier: ModifierType::Gui,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::L,
-                    modifier: ModifierType::Alt,
-                    tapping_terms: vec![],
-                },
-                KeyConfig {
-                    key: Key::SemiColon,
-                    modifier: ModifierType::Ctrl,
-                    tapping_terms: vec![],
-                },
-            ],
+            keys,
         }
     }
 }
