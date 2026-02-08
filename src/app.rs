@@ -1,3 +1,4 @@
+use iced::keyboard;
 use iced::{Element, Length::Fill, Subscription, widget::container};
 use rand::RngExt;
 use rand::seq::IndexedRandom;
@@ -6,6 +7,7 @@ use crate::message::Message;
 use crate::screens;
 use crate::types::{ExpectedInput, Key, KeyConfig, ModifierType, Screen, Token, flatten_tokens};
 
+// from "Alice's Adventures in Wonderland - Lewis Carroll (1865)", which is in the public domain
 const PARAGRAPH: &str = "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do. Once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, and what is the use of a book, thought Alice, without pictures or conversations? So she was considering in her own mind whether the pleasure of making a daisy chain would be worth the trouble.";
 
 pub struct App {
@@ -50,15 +52,17 @@ impl App {
             Message::StartTest => {
                 self.test_tokens = generate_test_tokens(&self.keys);
                 self.expected_inputs = flatten_tokens(&self.test_tokens);
-                self.current_position = 0;
                 self.screen = Screen::TypingTest;
             }
-            Message::Restart => self.screen = Screen::KeySelection,
+            Message::Restart => {
+                self.current_position = 0;
+                self.screen = Screen::KeySelection
+            }
             Message::KeyboardEvent(event) => {
                 if self.current_position >= self.expected_inputs.len() {
                     return;
                 }
-                if let iced::keyboard::Event::KeyPressed {
+                if let keyboard::Event::KeyPressed {
                     key,
                     text,
                     modifiers,
@@ -68,20 +72,11 @@ impl App {
                     let expected = &self.expected_inputs[self.current_position];
                     let matched = match expected {
                         ExpectedInput::Char(c) => {
-                            // try text field first (handles case sensitivity)
-                            let from_text = text
+                            let is_match = text
                                 .as_ref()
                                 .and_then(|t| t.chars().next())
                                 .is_some_and(|t| t == *c);
-                            // fallback to key field when text is None
-                            let from_key = text.is_none()
-                                && match &key {
-                                    iced::keyboard::Key::Character(k) => {
-                                        k.chars().next().is_some_and(|k| k == *c)
-                                    }
-                                    _ => false,
-                                };
-                            from_text || from_key
+                            is_match
                         }
                         ExpectedInput::Combo(modifier_type, letter) => {
                             let modifier_held = match modifier_type {
@@ -91,16 +86,14 @@ impl App {
                                 ModifierType::Gui => modifiers.logo(),
                                 ModifierType::None => false,
                             };
-                            let key_matches = match &key {
-                                iced::keyboard::Key::Character(c) => {
-                                    c.as_str() == letter.to_string().as_str()
-                                }
-                                _ => false,
+                            let is_match = if let keyboard::Key::Character(k) = &key {
+                                k.chars().next().is_some_and(|k| k == *letter)
+                            } else {
+                                false
                             };
-                            modifier_held && key_matches
+                            modifier_held && is_match
                         }
                     };
-
                     if matched {
                         self.current_position += 1;
                         if self.current_position >= self.expected_inputs.len() {
