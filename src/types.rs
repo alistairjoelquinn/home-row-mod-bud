@@ -124,13 +124,13 @@ pub struct Color;
 impl Color {
     pub const TEXT: iced::Color = iced::Color::from_rgb(0.4, 0.4, 0.4);
     pub const TEXT_TYPED: iced::Color = iced::Color::from_rgb(0.85, 0.85, 0.85);
-    pub const TEXT_ACTIVE: iced::Color = iced::Color::from_rgb(1.0, 1.0, 1.0);
+    pub const TEXT_ACTIVE: iced::Color = iced::Color::from_rgb(1.0, 1.0, 0.3);
     pub const BADGE: iced::Color = iced::Color::from_rgb(0.7, 0.7, 0.7);
     pub const BADGE_TYPED: iced::Color = iced::Color::from_rgb(0.55, 0.55, 0.55);
-    pub const BADGE_ACTIVE: iced::Color = iced::Color::from_rgb(0.9, 0.75, 0.25);
+    pub const BADGE_ACTIVE: iced::Color = iced::Color::from_rgb(1.0, 1.0, 0.3);
     pub const BADGE_BORDER: iced::Color = iced::Color::from_rgb(0.45, 0.45, 0.45);
     pub const BADGE_BORDER_TYPED: iced::Color = iced::Color::from_rgb(0.35, 0.35, 0.35);
-    pub const BADGE_BORDER_ACTIVE: iced::Color = iced::Color::from_rgb(0.9, 0.75, 0.25);
+    pub const BADGE_BORDER_ACTIVE: iced::Color = iced::Color::from_rgb(1.0, 1.0, 0.3);
 }
 
 pub enum Screen {
