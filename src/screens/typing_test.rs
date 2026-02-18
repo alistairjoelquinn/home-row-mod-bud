@@ -16,6 +16,7 @@ pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Me
     let mut chunk_len: usize = 0;
 
     for (i, input) in inputs.iter().enumerate() {
+        println!("current position _ char {} - {:?}", current_position, input);
         match input {
             ExpectedInput::Char(c) => {
                 let is_current = i == current_position;

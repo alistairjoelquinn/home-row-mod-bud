@@ -16,6 +16,7 @@ pub struct App {
     pub test_tokens: Vec<Token>,
     pub expected_inputs: Vec<ExpectedInput>,
     pub current_position: usize,
+    pub next_token: String,
 }
 
 impl Default for App {
@@ -35,6 +36,7 @@ impl Default for App {
             test_tokens: vec![],
             expected_inputs: vec![],
             current_position: 0,
+            next_token: "A".to_string(),
         }
     }
 }
@@ -70,6 +72,14 @@ impl App {
                 } = event
                 {
                     let expected = &self.expected_inputs[self.current_position];
+                    // check if expected value required timing (combo or capital)
+                    // Check possible next key to press first
+                    //      if capital letter OR shift
+                    //      else combo OR combo assigned key
+                    //      then
+                    //      if one of those pressed start timer
+                    //      STOP timer when capital letter OR combo char pressed
+                    //      PUSH time into array of timings for that MODIFIER
                     let matched = match expected {
                         ExpectedInput::Char(c) => {
                             let is_match = text
