@@ -16,7 +16,8 @@ pub struct App {
     pub test_tokens: Vec<Token>,
     pub expected_inputs: Vec<ExpectedInput>,
     pub current_position: usize,
-    pub next_token: String,
+    pub next_input: ExpectedInput,
+    pub expect_modifier: bool,
 }
 
 impl Default for App {
@@ -36,7 +37,8 @@ impl Default for App {
             test_tokens: vec![],
             expected_inputs: vec![],
             current_position: 0,
-            next_token: "A".to_string(),
+            next_input: ExpectedInput::Char('A'),
+            expect_modifier: false,
         }
     }
 }
@@ -153,7 +155,7 @@ fn generate_test_tokens(keys: &[KeyConfig]) -> Vec<Token> {
     let mut tokens: Vec<Token> = Vec::new();
 
     for (i, word) in words.iter().enumerate() {
-        let word = if rng.random_ratio(1, 5) {
+        let word = if i == 0 || rng.random_ratio(1, 5) {
             let mut chars = word.chars();
             match chars.next() {
                 Some(c) => c.to_uppercase().to_string() + chars.as_str(),
