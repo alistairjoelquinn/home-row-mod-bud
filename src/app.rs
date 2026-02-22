@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use iced::keyboard;
 use iced::{Element, Length::Fill, Subscription, widget::container};
 use rand::RngExt;
@@ -18,6 +20,7 @@ pub struct App {
     pub current_position: usize,
     pub next_input: ExpectedInput,
     pub expect_modifier: bool,
+    pub timer_start: Option<Instant>,
 }
 
 impl Default for App {
@@ -38,7 +41,7 @@ impl Default for App {
             expected_inputs: vec![],
             current_position: 0,
             next_input: ExpectedInput::Char('A'),
-            expect_modifier: false,
+            expect_modifier: true, // start with `true` as first letter is always a capital
         }
     }
 }
