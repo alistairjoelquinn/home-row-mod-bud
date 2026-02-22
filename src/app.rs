@@ -42,6 +42,7 @@ impl Default for App {
             current_position: 0,
             next_input: ExpectedInput::Char('A'),
             expect_modifier: true, // start with `true` as first letter is always a capital
+            timer_start: None,
         }
     }
 }

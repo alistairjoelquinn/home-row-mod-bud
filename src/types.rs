@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, time::Duration};
 
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
 pub enum Key {
@@ -30,7 +30,7 @@ impl fmt::Display for Key {
 pub struct KeyConfig {
     pub key: Key,
     pub modifier: ModifierType,
-    pub tapping_terms: Vec<u8>,
+    pub tapping_terms: Vec<Duration>,
 }
 
 impl KeyConfig {
