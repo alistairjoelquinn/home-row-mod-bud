@@ -18,7 +18,7 @@ pub struct App {
     pub test_tokens: Vec<Token>,
     pub expected_inputs: Vec<ExpectedInput>,
     pub current_position: usize,
-    pub next_input: ExpectedInput,
+    pub next_touch: ExpectedInput,
     pub expect_modifier: bool,
     pub timer_start: Option<Instant>,
 }
@@ -40,7 +40,7 @@ impl Default for App {
             test_tokens: vec![],
             expected_inputs: vec![],
             current_position: 0,
-            next_input: ExpectedInput::Char('A'),
+            next_touch: ExpectedInput::Char('A'),
             expect_modifier: true, // start with `true` as first letter is always a capital
             timer_start: None,
         }
@@ -78,22 +78,17 @@ impl App {
                 } = event
                 {
                     let expected = &self.expected_inputs[self.current_position];
-                    // check if expected value required timing (combo or capital)
-                    // Check possible next key to press first
-                    //      if capital letter OR shift
-                    //      else combo OR combo assigned key
-                    //      then
-                    //      if one of those pressed start timer
-                    //      STOP timer when capital letter OR combo char pressed
-                    //      PUSH time into array of timings for that MODIFIER
-                    let matched = match expected {
-                        ExpectedInput::Char(c) => {
-                            let is_match = text
-                                .as_ref()
-                                .and_then(|t| t.chars().next())
-                                .is_some_and(|t| t == *c);
-                            is_match
+
+                    if let ExpectedInput::Char(c) = expected {
+                        if c.is_uppercase() {
+                            //help
                         }
+                    }
+                    let matched = match expected {
+                        ExpectedInput::Char(c) => text
+                            .as_ref()
+                            .and_then(|t| t.chars().next())
+                            .is_some_and(|t| t == *c),
                         ExpectedInput::Combo(modifier_type, letter) => {
                             let modifier_held = match modifier_type {
                                 ModifierType::Shift => modifiers.shift(),
@@ -114,6 +109,8 @@ impl App {
                         self.current_position += 1;
                         if self.current_position >= self.expected_inputs.len() {
                             self.screen = Screen::Results;
+                        } else {
+                            self.next_touch = self.expected_inputs[self.current_position].clone();
                         }
                     }
                 }
