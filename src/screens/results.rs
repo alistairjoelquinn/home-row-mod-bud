@@ -1,8 +1,6 @@
 use iced::{
     Alignment::Center,
-    Background,
-    Border,
-    Element,
+    Background, Border, Element,
     Length::Fill,
     widget::{button, column, container, row, text},
 };
@@ -42,13 +40,9 @@ fn key_card(config: &KeyConfig) -> Element<'_, Message> {
         .color(Color::TEXT_TYPED);
 
     let modifier_badge = container(
-        text(format!(
-            "{} {}",
-            config.modifier.symbol(),
-            config.modifier
-        ))
-        .size(13)
-        .color(Color::BADGE),
+        text(format!("{} {}", config.modifier.symbol(), config.modifier))
+            .size(13)
+            .color(Color::BADGE),
     )
     .padding([4, 8])
     .style(|_theme| container::Style {
@@ -78,12 +72,12 @@ fn key_card(config: &KeyConfig) -> Element<'_, Message> {
             );
         }
 
-        let separator = container(text(""))
-            .width(Fill)
-            .height(1)
-            .style(|_theme| container::Style {
-                background: Some(Background::Color(Color::BADGE_BORDER)),
-                ..Default::default()
+        let separator =
+            container(text("")).width(Fill).height(1).style(|_theme| {
+                container::Style {
+                    background: Some(Background::Color(Color::BADGE_BORDER)),
+                    ..Default::default()
+                }
             });
 
         let avg_label = text(format!("avg  {} ms", avg_ms))

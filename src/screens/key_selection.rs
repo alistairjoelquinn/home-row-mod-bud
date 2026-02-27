@@ -21,7 +21,9 @@ pub fn view(keys: &[KeyConfig]) -> Element<'_, Message> {
                 pick_list(
                     ModifierType::ALL,
                     Some(config.modifier.clone()),
-                    move |modifier| Message::ModifierSelected(config.key, modifier),
+                    move |modifier| Message::ModifierSelected(
+                        config.key, modifier
+                    ),
                 )
                 .width(80)
             ]

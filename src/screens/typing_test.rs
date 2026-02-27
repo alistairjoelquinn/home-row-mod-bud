@@ -8,7 +8,10 @@ use iced::{
 use crate::message::Message;
 use crate::types::{Color, ExpectedInput};
 
-pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Message> {
+pub fn view(
+    inputs: &[ExpectedInput],
+    current_position: usize,
+) -> Element<'_, Message> {
     let title = text("Typing Test").size(32);
 
     let mut chunks: Vec<(Vec<Element<'_, Message>>, usize)> = Vec::new();
@@ -26,18 +29,23 @@ pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Me
                 } else {
                     Color::TEXT
                 };
-                let display_char = if *c == ' ' && is_current { '·' } else { *c };
-                current_chunk.push(text(display_char.to_string()).size(22).color(color).into());
+                let display_char =
+                    if *c == ' ' && is_current { '·' } else { *c };
+                current_chunk.push(
+                    text(display_char.to_string()).size(22).color(color).into(),
+                );
                 chunk_len += 1;
 
                 if *c == ' ' {
-                    chunks.push((std::mem::take(&mut current_chunk), chunk_len));
+                    chunks
+                        .push((std::mem::take(&mut current_chunk), chunk_len));
                     chunk_len = 0;
                 }
             }
             ExpectedInput::Combo(modifier, letter) => {
                 if !current_chunk.is_empty() {
-                    chunks.push((std::mem::take(&mut current_chunk), chunk_len));
+                    chunks
+                        .push((std::mem::take(&mut current_chunk), chunk_len));
                     chunk_len = 0;
                 }
 
@@ -79,7 +87,9 @@ pub fn view(inputs: &[ExpectedInput], current_position: usize) -> Element<'_, Me
     let mut line_char_count = 0;
 
     for (elements, char_count) in chunks {
-        if line_char_count + char_count > chars_per_line && !current_line.is_empty() {
+        if line_char_count + char_count > chars_per_line
+            && !current_line.is_empty()
+        {
             lines.push(
                 row(std::mem::take(&mut current_line))
                     .align_y(Center)
