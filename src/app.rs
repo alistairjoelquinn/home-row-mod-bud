@@ -7,7 +7,9 @@ use rand::seq::IndexedRandom;
 
 use crate::message::Message;
 use crate::screens;
-use crate::types::{ExpectedInput, Key, KeyConfig, ModifierType, Screen, Token, flatten_tokens};
+use crate::types::{
+    ExpectedInput, Key, KeyConfig, ModifierType, Screen, Token, flatten_tokens,
+};
 
 // from "Alice's Adventures in Wonderland - Lewis Carroll (1865)", which is in the public domain
 const PARAGRAPH: &str = "Alice was beginning to get very tired of sitting by her sister on the bank, and of having nothing to do. Once or twice she had peeped into the book her sister was reading, but it had no pictures or conversations in it, and what is the use of a book, thought Alice, without pictures or conversations? So she was considering in her own mind whether the pleasure of making a daisy chain would be worth the trouble.";
@@ -75,6 +77,51 @@ impl App {
                 if self.current_position >= self.expected_inputs.len() {
                     return;
                 }
+
+                // Start the timer when the modifier key is engaged for an
+                // upcoming combo. Accepts both the modifier being held
+                // (ModifiersChanged) and the home-row key firing as a character
+                // (firmware tap misfire).
+                if let ExpectedInput::Combo(modifier_type, _) =
+                    &self.expected_inputs[self.current_position]
+                {
+                    if self.timer_start.is_none() {
+                        let modifier_type = *modifier_type;
+                        match &event {
+                            keyboard::Event::ModifiersChanged(mods) => {
+                                let became_active = match modifier_type {
+                                    ModifierType::Shift => mods.shift(),
+                                    ModifierType::Ctrl => mods.control(),
+                                    ModifierType::Alt => mods.alt(),
+                                    ModifierType::Gui => mods.logo(),
+                                    ModifierType::None => false,
+                                };
+                                if became_active {
+                                    self.timer_start = Some(Instant::now());
+                                }
+                            }
+                            keyboard::Event::KeyPressed { text, .. } => {
+                                let home_row_chars: Vec<char> = self
+                                    .keys
+                                    .iter()
+                                    .filter(|k| k.modifier == modifier_type)
+                                    .map(|k| k.key.char())
+                                    .collect();
+                                if text
+                                    .as_ref()
+                                    .and_then(|t| t.chars().next())
+                                    .is_some_and(|c| {
+                                        home_row_chars.contains(&c)
+                                    })
+                                {
+                                    self.timer_start = Some(Instant::now());
+                                }
+                            }
+                            _ => {}
+                        }
+                    }
+                }
+
                 if let keyboard::Event::KeyPressed {
                     key,
                     text,
@@ -83,12 +130,6 @@ impl App {
                 } = event
                 {
                     let expected = &self.expected_inputs[self.current_position];
-
-                    if let ExpectedInput::Char(c) = expected {
-                        if c.is_uppercase() {
-                            //help
-                        }
-                    }
                     let matched = match expected {
                         ExpectedInput::Char(c) => text
                             .as_ref()
@@ -102,7 +143,9 @@ impl App {
                                 ModifierType::Gui => modifiers.logo(),
                                 ModifierType::None => false,
                             };
-                            let is_match = if let keyboard::Key::Character(k) = &key {
+                            let is_match = if let keyboard::Key::Character(k) =
+                                &key
+                            {
                                 k.chars().next().is_some_and(|k| k == *letter)
                             } else {
                                 false
@@ -110,12 +153,30 @@ impl App {
                             modifier_held && is_match
                         }
                     };
+
                     if matched {
+                        // Record the timing if this was a combo and the timer
+                        // was running.
+                        if let ExpectedInput::Combo(modifier_type, _) = expected
+                        {
+                            if let Some(start) = self.timer_start.take() {
+                                let duration = start.elapsed();
+                                let modifier_type = *modifier_type;
+                                for key_config in &mut self.keys {
+                                    if key_config.modifier == modifier_type {
+                                        key_config.tapping_terms.push(duration);
+                                    }
+                                }
+                            }
+                        }
+
                         self.current_position += 1;
                         if self.current_position >= self.expected_inputs.len() {
                             self.screen = Screen::Results;
                         } else {
-                            self.next_touch = self.expected_inputs[self.current_position].clone();
+                            self.next_touch = self.expected_inputs
+                                [self.current_position]
+                                .clone();
                         }
                     }
                 }
@@ -126,9 +187,10 @@ impl App {
     pub fn view(&self) -> Element<'_, Message> {
         let content: Element<Message> = match self.screen {
             Screen::KeySelection => screens::key_selection::view(&self.keys),
-            Screen::TypingTest => {
-                screens::typing_test::view(&self.expected_inputs, self.current_position)
-            }
+            Screen::TypingTest => screens::typing_test::view(
+                &self.expected_inputs,
+                self.current_position,
+            ),
             Screen::Results => screens::results::view(),
         };
         container(content)
@@ -142,7 +204,9 @@ impl App {
 
     pub fn subscription(&self) -> Subscription<Message> {
         match self.screen {
-            Screen::TypingTest => keyboard::listen().map(Message::KeyboardEvent),
+            Screen::TypingTest => {
+                keyboard::listen().map(Message::KeyboardEvent)
+            }
             _ => Subscription::none(),
         }
     }
