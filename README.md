@@ -22,6 +22,8 @@ Select the modifier for each of the home row keys (or leave blank if none is ass
 
 Then complete the typing test to receive feedback about your timing, with suggested values to use in your QMK / ZMK firmware build.
 
+> **Note:** disable any window manager shortcuts (e.g. Raycast, Magnet) that use the same modifier keys before running the test, as they will intercept key combinations before the app can see them.
+
 <img width="1028" height="767" alt="Screenshot 2026-02-09 at 09 36 26" src="https://github.com/user-attachments/assets/a171a25b-675a-4a74-aab6-0b9e775b4d01" />
 
 

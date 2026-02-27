@@ -21,7 +21,6 @@ pub struct App {
     pub expected_inputs: Vec<ExpectedInput>,
     pub current_position: usize,
     pub next_touch: ExpectedInput,
-    pub expect_modifier: bool,
     pub timer_start: Option<Instant>,
 }
 
@@ -43,7 +42,6 @@ impl Default for App {
             expected_inputs: vec![],
             current_position: 0,
             next_touch: ExpectedInput::Char('A'),
-            expect_modifier: true, // start with `true` as first letter is always a capital
             timer_start: None,
         }
     }
