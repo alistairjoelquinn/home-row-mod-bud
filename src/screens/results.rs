@@ -58,15 +58,19 @@ fn key_card(config: &KeyConfig) -> Element<'_, Message> {
         text("no data").size(13).color(Color::TEXT).into()
     } else {
         let avg_ms = {
-            let total: u128 =
-                config.tapping_terms.iter().map(|d| d.as_millis()).sum();
-            total / config.tapping_terms.len() as u128
+            let total: f64 = config
+                .tapping_terms
+                .iter()
+                .map(|d| d.as_micros() as f64 / 1000.0)
+                .sum();
+            total / config.tapping_terms.len() as f64
         };
 
         let mut timings_col = column![].spacing(4).align_x(Center);
         for duration in &config.tapping_terms {
+            let ms = duration.as_micros() as f64 / 1000.0;
             timings_col = timings_col.push(
-                text(format!("{} ms", duration.as_millis()))
+                text(format!("{:.1} ms", ms))
                     .size(14)
                     .color(Color::TEXT_TYPED),
             );
@@ -80,7 +84,7 @@ fn key_card(config: &KeyConfig) -> Element<'_, Message> {
                 }
             });
 
-        let avg_label = text(format!("avg  {} ms", avg_ms))
+        let avg_label = text(format!("avg  {:.1} ms", avg_ms))
             .size(14)
             .color(Color::TEXT_ACTIVE);
 
