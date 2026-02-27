@@ -191,7 +191,7 @@ impl App {
                 &self.expected_inputs,
                 self.current_position,
             ),
-            Screen::Results => screens::results::view(),
+            Screen::Results => screens::results::view(&self.keys),
         };
         container(content)
             .width(Fill)
