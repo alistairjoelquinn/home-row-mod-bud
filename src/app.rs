@@ -83,22 +83,26 @@ impl App {
                 if let ExpectedInput::Combo(modifier_type, _) =
                     &self.expected_inputs[self.current_position]
                 {
-                    if self.timer_start.is_none() {
-                        let modifier_type = *modifier_type;
-                        match &event {
-                            keyboard::Event::ModifiersChanged(mods) => {
-                                let became_active = match modifier_type {
-                                    ModifierType::Shift => mods.shift(),
-                                    ModifierType::Ctrl => mods.control(),
-                                    ModifierType::Alt => mods.alt(),
-                                    ModifierType::Gui => mods.logo(),
-                                    ModifierType::None => false,
-                                };
-                                if became_active {
-                                    self.timer_start = Some(Instant::now());
-                                }
+                    let modifier_type = *modifier_type;
+                    match &event {
+                        keyboard::Event::ModifiersChanged(mods) => {
+                            let is_active = match modifier_type {
+                                ModifierType::Shift => mods.shift(),
+                                ModifierType::Ctrl => mods.control(),
+                                ModifierType::Alt => mods.alt(),
+                                ModifierType::Gui => mods.logo(),
+                                ModifierType::None => false,
+                            };
+                            if is_active && self.timer_start.is_none() {
+                                self.timer_start = Some(Instant::now());
+                            } else if !is_active {
+                                // Modifier released before combo completed —
+                                // reset so the next press gives a clean start.
+                                self.timer_start = None;
                             }
-                            keyboard::Event::KeyPressed { text, .. } => {
+                        }
+                        keyboard::Event::KeyPressed { text, .. } => {
+                            if self.timer_start.is_none() {
                                 let home_row_chars: Vec<char> = self
                                     .keys
                                     .iter()
@@ -115,8 +119,8 @@ impl App {
                                     self.timer_start = Some(Instant::now());
                                 }
                             }
-                            _ => {}
                         }
+                        _ => {}
                     }
                 }
 
