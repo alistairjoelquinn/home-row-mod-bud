@@ -12,6 +12,21 @@ pub enum Key {
     SemiColon,
 }
 
+impl Key {
+    pub fn char(&self) -> char {
+        match self {
+            Key::A => 'a',
+            Key::S => 's',
+            Key::D => 'd',
+            Key::F => 'f',
+            Key::J => 'j',
+            Key::K => 'k',
+            Key::L => 'l',
+            Key::SemiColon => ';',
+        }
+    }
+}
+
 impl fmt::Display for Key {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {

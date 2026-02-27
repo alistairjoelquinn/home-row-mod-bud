@@ -60,10 +60,15 @@ impl App {
             Message::StartTest => {
                 self.test_tokens = generate_test_tokens(&self.keys);
                 self.expected_inputs = flatten_tokens(&self.test_tokens);
+                self.timer_start = None;
                 self.screen = Screen::TypingTest;
             }
             Message::Restart => {
                 self.current_position = 0;
+                self.timer_start = None;
+                for key in &mut self.keys {
+                    key.tapping_terms.clear();
+                }
                 self.screen = Screen::KeySelection
             }
             Message::KeyboardEvent(event) => {
