@@ -1,5 +1,11 @@
 use std::{fmt, time::Duration};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Hand {
+    Left,
+    Right,
+}
+
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
 pub enum Key {
     A,
@@ -23,6 +29,13 @@ impl Key {
             Key::K => 'k',
             Key::L => 'l',
             Key::SemiColon => ';',
+        }
+    }
+
+    pub fn hand(&self) -> Hand {
+        match self {
+            Key::A | Key::S | Key::D | Key::F => Hand::Left,
+            Key::J | Key::K | Key::L | Key::SemiColon => Hand::Right,
         }
     }
 }
@@ -61,7 +74,8 @@ impl KeyConfig {
 #[derive(Debug, Clone)]
 pub enum Token {
     Word(String),
-    Combo(ModifierType, char),
+    /// The specific home-row key to use as the modifier, plus the letter.
+    Combo(Key, char),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -110,21 +124,71 @@ impl fmt::Display for ModifierType {
 
 #[derive(Debug, Clone)]
 pub enum ExpectedInput {
+    /// A plain character with no modifier (lowercase, space, punctuation).
     Char(char),
-    Combo(ModifierType, char),
+    /// An explicit combo badge: specific home-row key + its modifier + letter.
+    Combo(Key, ModifierType, char),
+    /// A capital letter whose Shift timing should be attributed to a specific
+    /// home-row key. Displayed as the plain uppercase character, not a badge.
+    UpperChar(Key, char),
 }
 
-pub fn flatten_tokens(tokens: &[Token]) -> Vec<ExpectedInput> {
+/// Returns the typing hand for a character on a standard QWERTY layout.
+pub fn typing_hand(c: char) -> Hand {
+    const LEFT_HAND: &str = "qwertasdfgzxcvb";
+    if LEFT_HAND.contains(c.to_ascii_lowercase()) {
+        Hand::Left
+    } else {
+        Hand::Right
+    }
+}
+
+pub fn flatten_tokens(
+    tokens: &[Token],
+    keys: &[KeyConfig],
+) -> Vec<ExpectedInput> {
+    // Pre-compute the Shift key for each hand so we can assign capitals to
+    // the opposite hand's key deterministically.
+    let left_shift = keys
+        .iter()
+        .find(|k| k.modifier == ModifierType::Shift && k.key.hand() == Hand::Left)
+        .map(|k| k.key);
+    let right_shift = keys
+        .iter()
+        .find(|k| k.modifier == ModifierType::Shift && k.key.hand() == Hand::Right)
+        .map(|k| k.key);
+
     let mut inputs = Vec::new();
     for (i, token) in tokens.iter().enumerate() {
         match token {
             Token::Word(word) => {
                 for c in word.chars() {
-                    inputs.push(ExpectedInput::Char(c));
+                    if c.is_uppercase() {
+                        // Capital letter: assign to the Shift key on the
+                        // opposite hand from the character being typed.
+                        let char_hand = typing_hand(c);
+                        let shift_key = match char_hand {
+                            Hand::Left => right_shift.or(left_shift),
+                            Hand::Right => left_shift.or(right_shift),
+                        };
+                        match shift_key {
+                            Some(key) => {
+                                inputs.push(ExpectedInput::UpperChar(key, c))
+                            }
+                            None => inputs.push(ExpectedInput::Char(c)),
+                        }
+                    } else {
+                        inputs.push(ExpectedInput::Char(c));
+                    }
                 }
             }
-            Token::Combo(modifier, letter) => {
-                inputs.push(ExpectedInput::Combo(*modifier, *letter));
+            Token::Combo(key, letter) => {
+                let modifier = keys
+                    .iter()
+                    .find(|k| k.key == *key)
+                    .map(|k| k.modifier)
+                    .unwrap_or(ModifierType::None);
+                inputs.push(ExpectedInput::Combo(*key, modifier, *letter));
             }
         }
         if i < tokens.len() - 1 {

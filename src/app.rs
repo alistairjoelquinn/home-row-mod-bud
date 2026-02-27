@@ -8,7 +8,8 @@ use rand::seq::IndexedRandom;
 use crate::message::Message;
 use crate::screens;
 use crate::types::{
-    ExpectedInput, Key, KeyConfig, ModifierType, Screen, Token, flatten_tokens,
+    ExpectedInput, Hand, Key, KeyConfig, ModifierType, Screen, Token,
+    flatten_tokens, typing_hand,
 };
 
 // from "Alice's Adventures in Wonderland - Lewis Carroll (1865)", which is in the public domain
@@ -59,7 +60,8 @@ impl App {
             }
             Message::StartTest => {
                 self.test_tokens = generate_test_tokens(&self.keys);
-                self.expected_inputs = flatten_tokens(&self.test_tokens);
+                self.expected_inputs =
+                    flatten_tokens(&self.test_tokens, &self.keys);
                 self.timer_start = None;
                 self.screen = Screen::TypingTest;
             }
@@ -76,10 +78,10 @@ impl App {
                     return;
                 }
 
-                // Both combos and uppercase chars require a modifier — use a
-                // single helper to identify which one (if any) for the current
-                // expected input, so timer logic is shared between the two cases.
-                if let Some(modifier_type) = required_modifier(
+                // Both Combo and UpperChar require a modifier. The helper
+                // returns (modifier_type, specific_key) so timer start uses
+                // the modifier type and recording targets the specific key.
+                if let Some((modifier_type, _)) = required_modifier(
                     &self.expected_inputs[self.current_position],
                 ) {
                     match &event {
@@ -135,7 +137,11 @@ impl App {
                             .as_ref()
                             .and_then(|t| t.chars().next())
                             .is_some_and(|t| t == *c),
-                        ExpectedInput::Combo(modifier_type, letter) => {
+                        ExpectedInput::UpperChar(_, c) => text
+                            .as_ref()
+                            .and_then(|t| t.chars().next())
+                            .is_some_and(|t| t == *c),
+                        ExpectedInput::Combo(_, modifier_type, letter) => {
                             let modifier_held = match modifier_type {
                                 ModifierType::Shift => modifiers.shift(),
                                 ModifierType::Ctrl => modifiers.control(),
@@ -155,15 +161,18 @@ impl App {
                     };
 
                     if matched {
-                        // Record timing for any input that required a modifier.
-                        if let Some(modifier_type) = required_modifier(expected)
+                        // Record timing to the specific pre-assigned key only.
+                        if let Some((_, target_key)) =
+                            required_modifier(expected)
                         {
                             if let Some(start) = self.timer_start.take() {
                                 let duration = start.elapsed();
-                                for key_config in &mut self.keys {
-                                    if key_config.modifier == modifier_type {
-                                        key_config.tapping_terms.push(duration);
-                                    }
+                                if let Some(cfg) = self
+                                    .keys
+                                    .iter_mut()
+                                    .find(|k| k.key == target_key)
+                                {
+                                    cfg.tapping_terms.push(duration);
                                 }
                             }
                         }
@@ -210,24 +219,26 @@ impl App {
     }
 }
 
-// Returns the modifier required for a given expected input, if any.
-// Uppercase chars implicitly require Shift; combos name their modifier directly.
-fn required_modifier(input: &ExpectedInput) -> Option<ModifierType> {
+/// Returns (modifier_type, specific_key) for inputs that require a modifier.
+/// UpperChar always uses Shift; Combo carries its modifier explicitly.
+/// The modifier_type drives timer start/reset; the key drives recording.
+fn required_modifier(input: &ExpectedInput) -> Option<(ModifierType, Key)> {
     match input {
-        ExpectedInput::Combo(m, _) => Some(*m),
-        ExpectedInput::Char(c) if c.is_uppercase() => Some(ModifierType::Shift),
+        ExpectedInput::Combo(key, modifier, _) => Some((*modifier, *key)),
+        ExpectedInput::UpperChar(key, _) => Some((ModifierType::Shift, *key)),
         _ => None,
     }
 }
 
 fn generate_test_tokens(keys: &[KeyConfig]) -> Vec<Token> {
     let mut rng = rand::rng();
-    // Shift is excluded: capital letters in the text already exercise Shift
-    // timing without needing explicit Shift combos.
-    let modifiers: Vec<ModifierType> = keys
+    // Collect non-Shift modifier keys. Shift is covered by capital letters.
+    let mod_keys: Vec<Key> = keys
         .iter()
-        .map(|k| k.modifier)
-        .filter(|m| *m != ModifierType::None && *m != ModifierType::Shift)
+        .filter(|k| {
+            k.modifier != ModifierType::None && k.modifier != ModifierType::Shift
+        })
+        .map(|k| k.key)
         .collect();
     let letters: Vec<char> = ('a'..='z').collect();
 
@@ -247,11 +258,26 @@ fn generate_test_tokens(keys: &[KeyConfig]) -> Vec<Token> {
 
         tokens.push(Token::Word(word));
 
-        if !modifiers.is_empty() && i > 0 && rng.random_ratio(1, 8) {
-            let modifier = *modifiers.choose(&mut rng).unwrap();
+        if !mod_keys.is_empty() && i > 0 && rng.random_ratio(1, 8) {
             let letter = *letters.choose(&mut rng).unwrap();
-            if !(modifier == ModifierType::Gui && letter == 'q') {
-                tokens.push(Token::Combo(modifier, letter));
+            let char_hand = typing_hand(letter);
+            // Pick a modifier key on the opposite hand from the letter.
+            let candidates: Vec<Key> = mod_keys
+                .iter()
+                .copied()
+                .filter(|k| k.hand() != char_hand)
+                .collect();
+            // Fall back to any mod key if no opposite-hand option exists.
+            let pool = if candidates.is_empty() { &mod_keys } else { &candidates };
+            if let Some(&chosen_key) = pool.choose(&mut rng) {
+                let key_modifier = keys
+                    .iter()
+                    .find(|k| k.key == chosen_key)
+                    .map(|k| k.modifier)
+                    .unwrap_or(ModifierType::None);
+                if !(key_modifier == ModifierType::Gui && letter == 'q') {
+                    tokens.push(Token::Combo(chosen_key, letter));
+                }
             }
         }
     }
