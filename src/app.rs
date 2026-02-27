@@ -238,7 +238,9 @@ fn generate_test_tokens(keys: &[KeyConfig]) -> Vec<Token> {
         if !modifiers.is_empty() && i > 0 && rng.random_ratio(1, 8) {
             let modifier = *modifiers.choose(&mut rng).unwrap();
             let letter = *letters.choose(&mut rng).unwrap();
-            tokens.push(Token::Combo(modifier, letter));
+            if !(modifier == ModifierType::Gui && letter == 'q') {
+                tokens.push(Token::Combo(modifier, letter));
+            }
         }
     }
     tokens
