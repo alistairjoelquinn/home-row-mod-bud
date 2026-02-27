@@ -1,5 +1,5 @@
 use iced::{
-    Alignment::Center,
+    Alignment::{Center, Start},
     Background, Border, Element,
     Length::Fill,
     widget::{button, column, container, row, text},
@@ -19,7 +19,7 @@ pub fn view(keys: &[KeyConfig]) -> Element<'_, Message> {
         .filter(|k| k.modifier != ModifierType::None)
         .collect();
 
-    let mut cards = row![].spacing(16).align_y(Center);
+    let mut cards = row![].spacing(16).align_y(Start);
     for config in active_keys {
         cards = cards.push(key_card(config));
     }
@@ -54,9 +54,27 @@ fn key_card(config: &KeyConfig) -> Element<'_, Message> {
         ..Default::default()
     });
 
-    let body: Element<Message> = if config.tapping_terms.is_empty() {
-        text("no data").size(13).color(Color::TEXT).into()
-    } else {
+    // Bordered card contains only the key label and modifier badge —
+    // same height for every key regardless of how many timings it has.
+    let header = container(
+        column![key_label, modifier_badge]
+            .spacing(8)
+            .align_x(Center),
+    )
+    .padding([16, 20])
+    .width(130)
+    .style(|_theme| container::Style {
+        border: Border {
+            color: Color::BADGE_BORDER,
+            width: 1.0,
+            radius: 8.0.into(),
+        },
+        ..Default::default()
+    });
+
+    let mut card_col = column![header].spacing(12).align_x(Center);
+
+    if !config.tapping_terms.is_empty() {
         let avg_ms = {
             let total: f64 = config
                 .tapping_terms
@@ -88,26 +106,12 @@ fn key_card(config: &KeyConfig) -> Element<'_, Message> {
             .size(14)
             .color(Color::TEXT_ACTIVE);
 
-        column![timings_col, separator, avg_label]
-            .spacing(8)
-            .align_x(Center)
-            .into()
-    };
+        card_col = card_col.push(
+            column![timings_col, separator, avg_label]
+                .spacing(8)
+                .align_x(Center),
+        );
+    }
 
-    let inner = column![key_label, modifier_badge, body]
-        .spacing(10)
-        .align_x(Center);
-
-    container(inner)
-        .padding([16, 20])
-        .width(130)
-        .style(|_theme| container::Style {
-            border: Border {
-                color: Color::BADGE_BORDER,
-                width: 1.0,
-                radius: 8.0.into(),
-            },
-            ..Default::default()
-        })
-        .into()
+    card_col.into()
 }
