@@ -9,5 +9,9 @@ fn main() -> iced::Result {
     iced::application(App::default, App::update, App::view)
         .title("Home Row Mod Bud")
         .subscription(App::subscription)
+        .window(iced::window::Settings {
+            fullscreen: true,
+            ..Default::default()
+        })
         .run()
 }

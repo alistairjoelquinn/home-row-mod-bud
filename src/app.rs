@@ -76,14 +76,12 @@ impl App {
                     return;
                 }
 
-                // Start the timer when the modifier key is engaged for an
-                // upcoming combo. Accepts both the modifier being held
-                // (ModifiersChanged) and the home-row key firing as a character
-                // (firmware tap misfire).
-                if let ExpectedInput::Combo(modifier_type, _) =
-                    &self.expected_inputs[self.current_position]
-                {
-                    let modifier_type = *modifier_type;
+                // Both combos and uppercase chars require a modifier — use a
+                // single helper to identify which one (if any) for the current
+                // expected input, so timer logic is shared between the two cases.
+                if let Some(modifier_type) = required_modifier(
+                    &self.expected_inputs[self.current_position],
+                ) {
                     match &event {
                         keyboard::Event::ModifiersChanged(mods) => {
                             let is_active = match modifier_type {
@@ -96,7 +94,7 @@ impl App {
                             if is_active && self.timer_start.is_none() {
                                 self.timer_start = Some(Instant::now());
                             } else if !is_active {
-                                // Modifier released before combo completed —
+                                // Modifier released before input completed —
                                 // reset so the next press gives a clean start.
                                 self.timer_start = None;
                             }
@@ -157,13 +155,11 @@ impl App {
                     };
 
                     if matched {
-                        // Record the timing if this was a combo and the timer
-                        // was running.
-                        if let ExpectedInput::Combo(modifier_type, _) = expected
+                        // Record timing for any input that required a modifier.
+                        if let Some(modifier_type) = required_modifier(expected)
                         {
                             if let Some(start) = self.timer_start.take() {
                                 let duration = start.elapsed();
-                                let modifier_type = *modifier_type;
                                 for key_config in &mut self.keys {
                                     if key_config.modifier == modifier_type {
                                         key_config.tapping_terms.push(duration);
@@ -214,12 +210,24 @@ impl App {
     }
 }
 
+// Returns the modifier required for a given expected input, if any.
+// Uppercase chars implicitly require Shift; combos name their modifier directly.
+fn required_modifier(input: &ExpectedInput) -> Option<ModifierType> {
+    match input {
+        ExpectedInput::Combo(m, _) => Some(*m),
+        ExpectedInput::Char(c) if c.is_uppercase() => Some(ModifierType::Shift),
+        _ => None,
+    }
+}
+
 fn generate_test_tokens(keys: &[KeyConfig]) -> Vec<Token> {
     let mut rng = rand::rng();
+    // Shift is excluded: capital letters in the text already exercise Shift
+    // timing without needing explicit Shift combos.
     let modifiers: Vec<ModifierType> = keys
         .iter()
         .map(|k| k.modifier)
-        .filter(|m| *m != ModifierType::None)
+        .filter(|m| *m != ModifierType::None && *m != ModifierType::Shift)
         .collect();
     let letters: Vec<char> = ('a'..='z').collect();
 
