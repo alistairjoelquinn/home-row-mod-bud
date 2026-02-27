@@ -20,7 +20,7 @@ pub fn view(
 
     for (i, input) in inputs.iter().enumerate() {
         match input {
-            ExpectedInput::Char(c) => {
+            ExpectedInput::Char(c) | ExpectedInput::UpperChar(_, c) => {
                 let is_current = i == current_position;
                 let color = if i < current_position {
                     Color::TEXT_TYPED
@@ -42,7 +42,7 @@ pub fn view(
                     chunk_len = 0;
                 }
             }
-            ExpectedInput::Combo(modifier, letter) => {
+            ExpectedInput::Combo(_, modifier, letter) => {
                 if !current_chunk.is_empty() {
                     chunks
                         .push((std::mem::take(&mut current_chunk), chunk_len));
